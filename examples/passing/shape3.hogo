@@ -1,0 +1,12 @@
+repeat 180 [
+  repeat 4 [
+    repeat 4 [
+      forward 25
+      left 45
+      forward 50
+      right 45
+    ]
+    left 90
+  ]
+  left 2
+]

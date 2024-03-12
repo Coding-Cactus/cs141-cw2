@@ -1,0 +1,10 @@
+repeat 360 [
+  repeat 3 [
+    repeat 3 [
+      forward 150
+      left 60
+    ]
+    left 60
+  ]
+  left 1
+]

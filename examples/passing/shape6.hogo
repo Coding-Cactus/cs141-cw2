@@ -1,0 +1,9 @@
+repeat 180 [
+  repeat 4 [
+    forward 600
+    left 60
+    forward 300
+    left 150
+  ]
+  right 2
+]
