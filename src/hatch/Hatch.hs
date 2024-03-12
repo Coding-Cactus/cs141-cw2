@@ -26,7 +26,7 @@ runAnimation :: (Int -> Image) -> IO ()
 runAnimation = animSteps fps
 
 window :: Display
-window = InWindow "CS141 Anty Programming" (1280, 960) (10, 10) --(1280, 960) 
+window = InWindow "CS141 Hogo Viewer" (1280, 960) (10, 10) --(1280, 960)
 
 background :: Color
 background = makeColor 0.9 0.9 0.9 1
