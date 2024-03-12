@@ -24,5 +24,12 @@ data HogoCode
   | Repeat Int HogoProgram
   deriving (Show,Read,Eq)
 
+data TurtleState = TurtleState {
+  position :: (Float, Float),
+  angle :: Float,
+  penDown :: Bool,
+  linesDrawnSoFar :: [((Float, Float), (Float,Float))]
+}
+
 -- | This is an alias for the Megaparsec parser type; the "Void" tells it that we don't have any custom error type, and the "string" tells it that we're parsing strings.
 type Parser = Parsec Void String
