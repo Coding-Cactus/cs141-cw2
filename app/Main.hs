@@ -3,7 +3,6 @@ module Main (main) where
 import System.Directory (doesFileExist)
 import System.Environment (getArgs)
 
-import Hurtle.Types
 import Hurtle.Parser
 import Hurtle.Viewer
 
@@ -18,14 +17,10 @@ main = do
 runFile :: String -> IO ()
 runFile fname = do
   fileExists <- doesFileExist fname
-  if fileExists
-    then do
-      content <- readFile fname
-      case parseHogoFile fname content of
-        Left err -> putStrLn err
-        Right program -> runHogo program
-    else putStrLn $ "File " <> fname <> " not found"
-
-
-runHogo :: HogoProgram -> IO ()
-runHogo program = renderHogo program
+  if fileExists then do
+    content <- readFile fname
+    case parseHogoFile fname content of
+      Left err      -> putStrLn err
+      Right program -> renderHogo program
+  else
+    putStrLn $ "File " <> fname <> " not found"
