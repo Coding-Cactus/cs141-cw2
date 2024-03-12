@@ -1,4 +1,4 @@
-module Hurtle.Parser (parseHogoFile) where
+module Hurtle.Parser (parseHogoFile, parseHogo) where
 
 import Hurtle.Types ( Parser, HogoCode(..), HogoProgram )
 
