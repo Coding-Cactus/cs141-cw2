@@ -21,6 +21,6 @@ runFile fname = do
     content <- readFile fname
     case parseHogoFile fname content of
       Left err      -> putStrLn err
-      Right program -> renderHogo program
+      Right program -> renderHogoAnimation program
   else
     putStrLn $ "File " <> fname <> " not found"

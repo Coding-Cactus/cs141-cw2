@@ -1,4 +1,4 @@
-module Hurtle.Viewer (renderHogo) where
+module Hurtle.Viewer (renderHogoAnimation) where
 
 import Hatch
 
@@ -6,32 +6,44 @@ import Control.Monad.State
 import Hurtle.Types
 import Data.Foldable (foldl')
 
-renderHogo :: HogoProgram -> IO ()
-renderHogo program = runAnimation $ const finalState
+
+
+
+renderHogoAnimation :: HogoProgram -> IO ()
+renderHogoAnimation program = runAnimation finalState
   where
-    finalState :: Image
-    finalState = drawState $ runProgram program
+    finalState = drawState . runProgramUptoFrame program
 
 
 drawState :: TurtleState -> Image
 drawState turtle = foldl' (<@>) turtleImg $ map drawLine $ linesDrawnSoFar turtle
   where
     drawLine ((x1, y1), (x2, y2)) = line x1 y1 x2 y2
-    turtleImg = rotate (round $ angle turtle) ant
+    turtleImg = offset (round x) (round y) $ rotate (round $ angle turtle) ant
+    (x, y) = position turtle
 
 
-runProgram :: HogoProgram -> TurtleState
-runProgram program = execState (evalProgram program) initialTurtle
+runProgramUptoFrame :: HogoProgram -> Int -> TurtleState
+runProgramUptoFrame program frames = execState (evalProgram program) initialTurtle
   where
     initialTurtle = TurtleState {
       position = (0, 0),
       angle = 0,
       penDown = True,
-      linesDrawnSoFar = []
+      linesDrawnSoFar = [],
+      remainingFrames = fromIntegral frames,
+      speed = 10
     }
 
-evalProgram :: HogoProgram -> State TurtleState [()]
-evalProgram = traverse runCommand
+evalProgram :: HogoProgram -> State TurtleState ()
+evalProgram program = do
+  turtle <- get
+
+  if remainingFrames turtle <= 0 || null program then
+    pure ()
+  else do
+    runCommand $ head program
+    evalProgram $ tail program
 
 runCommand :: HogoCode -> State TurtleState ()
 runCommand command = do
@@ -54,13 +66,21 @@ runCommand command = do
 
 -- | Drawing Commands
 forwardCommand :: Float -> TurtleState -> TurtleState
-forwardCommand dist turtle = turtle { position = newPosition, linesDrawnSoFar = newLines }
+forwardCommand dist turtle = turtle {
+    position = newPosition,
+    linesDrawnSoFar = newLines,
+    remainingFrames = newRemainingFrames
+  }
   where
+    currentRemainingFrames = remainingFrames turtle
+    newRemainingFrames = max 0 $ currentRemainingFrames - (dist / speed turtle)
+    distCompletion = (currentRemainingFrames - newRemainingFrames) * speed turtle
+
     (x, y) = position turtle
     theta = pi / 180 * angle turtle
 
-    newX = x + dist * sin theta
-    newY = y + dist * cos theta
+    newX = x + distCompletion * sin theta
+    newY = y + distCompletion * cos theta
     newPosition = (newX, newY)
 
     currentLines = linesDrawnSoFar turtle
@@ -98,4 +118,6 @@ clearScreenCommand turtle = turtle { linesDrawnSoFar = [] }
 
 -- | Repeat Command
 repeatCommand :: Int -> HogoProgram -> TurtleState -> TurtleState
-repeatCommand n commands turtle = iterate (execState (evalProgram commands)) turtle !! n
+repeatCommand n commands turtle
+  | n == 0 || remainingFrames turtle <= 0 = turtle
+  | otherwise = repeatCommand (n-1) commands $ execState (evalProgram commands) turtle
