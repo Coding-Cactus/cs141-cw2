@@ -18,7 +18,7 @@ renderHogoAnimation program = runAnimation finalState
 drawState :: TurtleState -> Image
 drawState turtle = foldl' (<@>) turtleImg $ map drawLine $ linesDrawnSoFar turtle
   where
-    drawLine ((x1, y1), (x2, y2)) = line x1 y1 x2 y2
+    drawLine ((x1, y1), (x2, y2), (r, g, b)) = applyColour r g b $ line x1 y1 x2 y2
     turtleImg = offset (round x) (round y) $ rotate (round $ angle turtle) ant
     (x, y) = position turtle
 
@@ -30,6 +30,7 @@ runProgramUptoFrame program frames = execState (evalProgram program) initialTurt
       position = (0, 0),
       angle = 0,
       penDown = True,
+      colour = (0, 0, 0),
       linesDrawnSoFar = [],
       remainingFrames = fromIntegral frames,
       speed = 10
@@ -52,18 +53,19 @@ runCommand command = do
   let
     f =
       case command of
-        GoForward   dist          -> forwardCommand      dist
-        GoBackward  dist          -> backwardCommand     dist
-        TurnRight   dtheta        -> turnRightCommand    dtheta
-        TurnLeft    dtheta        -> turnLeftCommand     dtheta
-        SetSpeed    speed         -> setSpeedCommand     speed
-        Wait        duration      -> waitCommand         duration
-        GoHome                    -> goHomeCommand
-        PenUp                     -> penUpCommand
-        PenDown                   -> penDownCommand
-        ClearScreen               -> clearScreenCommand
-        Repeat       n   commands -> repeatCommand       n    commands
-        Forever      commands     -> foreverCommand      commands
+        GoForward   dist        -> forwardCommand      dist
+        GoBackward  dist        -> backwardCommand     dist
+        TurnRight   dtheta      -> turnRightCommand    dtheta
+        TurnLeft    dtheta      -> turnLeftCommand     dtheta
+        SetSpeed    speed       -> setSpeedCommand     speed
+        Wait        duration    -> waitCommand         duration
+        GoHome                  -> goHomeCommand
+        PenUp                   -> penUpCommand
+        PenDown                 -> penDownCommand
+        Colour       r g b      -> colourCommand       r g b
+        ClearScreen             -> clearScreenCommand
+        Repeat       n commands -> repeatCommand       n commands
+        Forever      commands   -> foreverCommand      commands
 
   put $ f turtle
 
@@ -89,7 +91,7 @@ forwardCommand dist turtle = turtle {
     currentLines = linesDrawnSoFar turtle
     newLines =
       if penDown turtle
-        then ((x, y), (newX, newY)) : currentLines
+        then ((x, y), (newX, newY), colour turtle) : currentLines
         else currentLines
 
 backwardCommand :: Float -> TurtleState -> TurtleState
@@ -119,11 +121,13 @@ goHomeCommand turtle = turtle { position = (0, 0), angle = 0 }
 -- | Pen Commands
 penUpCommand       :: TurtleState -> TurtleState
 penDownCommand     :: TurtleState -> TurtleState
+colourCommand      :: Float -> Float -> Float -> TurtleState -> TurtleState
 clearScreenCommand :: TurtleState -> TurtleState
 
-penUpCommand turtle       = turtle { penDown = False }
-penDownCommand turtle     = turtle { penDown = True }
-clearScreenCommand turtle = turtle { linesDrawnSoFar = [] }
+penUpCommand turtle        = turtle { penDown = False }
+penDownCommand turtle      = turtle { penDown = True }
+colourCommand r g b turtle = turtle { colour = (r, g, b) }
+clearScreenCommand turtle  = turtle { linesDrawnSoFar = [] }
 
 
 -- | Control Flow commands

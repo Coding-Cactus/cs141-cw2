@@ -1,9 +1,10 @@
-speed 10000
+speed 1000
 
 forever [
   repeat 360 [
     repeat 3 [
       repeat 3 [
+        colour 0 127 127
         forward 150
         left 60
       ]

@@ -1,6 +1,6 @@
 module Hurtle.Parser (parseHogoFile, parseHogo) where
 
-import Hurtle.Types ( Parser, HogoCode(..), HogoProgram )
+import Hurtle.Types
 
 -- You'll probably want to refer to https://hackage.haskell.org/package/megaparsec for documentation of the Megaparsec library.
 import Text.Megaparsec
@@ -21,13 +21,21 @@ parseHogo = commentsAndWhitespace >> manyTill parseStmt eof
 
 parseStmt :: Parser HogoCode
 parseStmt = do
-  statement <- nullaryCommand <|> unaryCommand <|> repeatCommand <|> foreverCommand
+  statement <- nullaryCommand
+           <|> unaryCommand
+           <|> trinaryCommand
+           <|> repeatCommand
+           <|> foreverCommand
+
   commentsAndWhitespace
   pure statement
 
 
 commentsAndWhitespace :: Parser ()
 commentsAndWhitespace = skipMany (space1 <|> skipLineComment ";")
+
+number :: Parser Float
+number = try float <|> decimal
 
 
 nullaryCommand :: Parser HogoCode
@@ -36,7 +44,6 @@ nullaryCommand = command "home"        GoHome
              <|> command "pendown"     PenDown
              <|> command "clearscreen" ClearScreen
   where
-    command :: String -> HogoCode -> Parser HogoCode
     command cmd stmtType = do
       void $ string cmd
       pure stmtType
@@ -51,12 +58,23 @@ unaryCommand = command "forward" GoForward
            <|> command "speed"   SetSpeed
            <|> command "wait"    Wait
   where
-    command :: String -> (Float -> HogoCode) -> Parser HogoCode
     command cmd stmtType = do
       void $ string cmd
       hspace1
-      stmtType <$> (try float <|> decimal)
+      stmtType <$> number
 
+
+trinaryCommand :: Parser HogoCode
+trinaryCommand = command "colour" Colour
+  where
+    command cmd stmtType = do
+      void $ string cmd
+      hspace1
+      arg1 <- number
+      hspace1
+      arg2 <- number
+      hspace1
+      stmtType arg1 arg2 <$> number
 
 
 repeatCommand :: Parser HogoCode

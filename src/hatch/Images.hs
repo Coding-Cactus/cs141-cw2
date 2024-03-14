@@ -7,14 +7,15 @@ module Images where
 
 --------------------------------------------------------------------------------
 
-import qualified Graphics.Gloss as Gloss 
+import qualified Graphics.Gloss as Gloss
 import Graphics.Gloss.Juicy ( loadJuicyPNG )
 import System.IO.Unsafe ( unsafePerformIO )
 import Layout
 import Transforms
 
 import Data.Maybe (fromMaybe)
-import Graphics.Gloss (Picture)
+import Graphics.Gloss (Picture, color)
+import Graphics.Gloss.Data.Color
 
 --------------------------------------------------------------------------------
 
@@ -23,7 +24,7 @@ loadPNG name = scale 0.1 $ Leaf $ png $ "assets/" ++ name ++ ".png"
 
 png :: FilePath -> Picture
 png fname = fromMaybe (Gloss.text "PNG ERROR")
-            $ unsafePerformIO 
+            $ unsafePerformIO
             $ loadJuicyPNG fname
 
 ant :: Image
@@ -40,11 +41,15 @@ line :: Float -> Float -> Float -> Float -> Image
 line x1 y1 x2 y2 = Leaf $ Gloss.line [(x1, y1), (x2, y2)]
 
 
+applyColour :: Float -> Float -> Float -> Image -> Image
+applyColour r g b = fmap (color rgbColor)
+  where rgbColor = makeColor (r / 255) (g / 255) (b / 255) 1
+
 text :: String -> Image
 text t = Leaf $ Gloss.pictures [
-            Gloss.translate x y 
-                $ Gloss.color Gloss.white 
-                $ Gloss.scale 0.5 0.5 
+            Gloss.translate x y
+                $ Gloss.color Gloss.white
+                $ Gloss.scale 0.5 0.5
                 $ Gloss.text t
             | x <- [-2..2]
             , y <- [-2..2]
