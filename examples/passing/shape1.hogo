@@ -1,12 +1,16 @@
-speed 1000
+speed 10000
 
-repeat 360 [
-  repeat 3 [
+forever [
+  repeat 360 [
     repeat 3 [
-      forward 150
+      repeat 3 [
+        forward 150
+        left 60
+      ]
       left 60
     ]
-    left 60
+    left 1
   ]
-  left 1
+  wait 2
+  clearscreen
 ]

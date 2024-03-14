@@ -16,6 +16,7 @@ data HogoCode
   | TurnLeft Float
   | TurnRight Float
   | SetSpeed Float
+  | Wait Float
   | GoHome
   -- | Pen Commands
   | PenUp
@@ -23,6 +24,7 @@ data HogoCode
   | ClearScreen
   -- | Control Flow
   | Repeat Int HogoProgram
+  | Forever HogoProgram
   deriving (Show,Read,Eq)
 
 data TurtleState = TurtleState {

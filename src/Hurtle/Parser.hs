@@ -21,7 +21,7 @@ parseHogo = commentsAndWhitespace >> manyTill parseStmt eof
 
 parseStmt :: Parser HogoCode
 parseStmt = do
-  statement <- nullaryCommand <|> unaryCommand <|> repeatCommand
+  statement <- nullaryCommand <|> unaryCommand <|> repeatCommand <|> foreverCommand
   commentsAndWhitespace
   pure statement
 
@@ -49,6 +49,7 @@ unaryCommand = command "forward" GoForward
            <|> command "left"    TurnLeft
            <|> command "right"   TurnRight
            <|> command "speed"   SetSpeed
+           <|> command "wait"    Wait
   where
     command :: String -> (Float -> HogoCode) -> Parser HogoCode
     command cmd stmtType = do
@@ -64,10 +65,19 @@ repeatCommand = do
   hspace1
   num <- decimal
   hspace1
-  Repeat num <$> parseRepeatBlock
-  where
-    parseRepeatBlock :: Parser HogoProgram
-    parseRepeatBlock = do
-      void $ char '['
-      commentsAndWhitespace
-      manyTill parseStmt (char ']')
+  Repeat num <$> parseBlock
+
+
+foreverCommand :: Parser HogoCode
+foreverCommand = do
+  void $ string "forever"
+  hspace1
+  Forever <$> parseBlock
+
+
+parseBlock :: Parser HogoProgram
+parseBlock = do
+  void $ char '['
+  commentsAndWhitespace
+  manyTill parseStmt (char ']')
+

@@ -57,11 +57,13 @@ runCommand command = do
         TurnRight   dtheta        -> turnRightCommand    dtheta
         TurnLeft    dtheta        -> turnLeftCommand     dtheta
         SetSpeed    speed         -> setSpeedCommand     speed
+        Wait        duration      -> waitCommand         duration
         GoHome                    -> goHomeCommand
         PenUp                     -> penUpCommand
         PenDown                   -> penDownCommand
         ClearScreen               -> clearScreenCommand
         Repeat       n   commands -> repeatCommand       n    commands
+        Forever      commands     -> foreverCommand      commands
 
   put $ f turtle
 
@@ -102,12 +104,14 @@ turnLeftCommand  dTheta turtle = turtle { angle = angle turtle - dTheta }
 turnRightCommand dTheta turtle = turtle { angle = angle turtle + dTheta }
 
 
--- | Speed Command
 setSpeedCommand :: Float -> TurtleState -> TurtleState
 setSpeedCommand newSpeed turtle = turtle { speed = newSpeed }
 
 
--- | Home Command
+waitCommand :: Float -> TurtleState -> TurtleState
+waitCommand duration turtle = turtle { remainingFrames = max 0 (remainingFrames turtle - (duration * 30)) }
+
+
 goHomeCommand :: TurtleState -> TurtleState
 goHomeCommand turtle = turtle { position = (0, 0), angle = 0 }
 
@@ -122,8 +126,13 @@ penDownCommand turtle     = turtle { penDown = True }
 clearScreenCommand turtle = turtle { linesDrawnSoFar = [] }
 
 
--- | Repeat Command
+-- | Control Flow commands
 repeatCommand :: Int -> HogoProgram -> TurtleState -> TurtleState
 repeatCommand n commands turtle
   | n == 0 || remainingFrames turtle <= 0 = turtle
   | otherwise = repeatCommand (n-1) commands $ execState (evalProgram commands) turtle
+
+foreverCommand :: HogoProgram -> TurtleState -> TurtleState
+foreverCommand commands turtle
+  | remainingFrames turtle <= 0 = turtle
+  | otherwise = foreverCommand commands $ execState (evalProgram commands) turtle
