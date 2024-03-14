@@ -54,8 +54,9 @@ runCommand command = do
       case command of
         GoForward   dist          -> forwardCommand      dist
         GoBackward  dist          -> backwardCommand     dist
-        TurnRight   dθ            -> turnRightCommand    dθ
-        TurnLeft    dθ            -> turnLeftCommand     dθ
+        TurnRight   dtheta        -> turnRightCommand    dtheta
+        TurnLeft    dtheta        -> turnLeftCommand     dtheta
+        SetSpeed    speed         -> setSpeedCommand     speed
         GoHome                    -> goHomeCommand
         PenUp                     -> penUpCommand
         PenDown                   -> penDownCommand
@@ -99,6 +100,11 @@ turnRightCommand :: Float -> TurtleState -> TurtleState
 
 turnLeftCommand  dTheta turtle = turtle { angle = angle turtle - dTheta }
 turnRightCommand dTheta turtle = turtle { angle = angle turtle + dTheta }
+
+
+-- | Speed Command
+setSpeedCommand :: Float -> TurtleState -> TurtleState
+setSpeedCommand newSpeed turtle = turtle { speed = newSpeed }
 
 
 -- | Home Command

@@ -15,6 +15,7 @@ data HogoCode
   | GoBackward Float
   | TurnLeft Float
   | TurnRight Float
+  | SetSpeed Float
   | GoHome
   -- | Pen Commands
   | PenUp

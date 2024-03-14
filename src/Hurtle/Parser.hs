@@ -12,7 +12,7 @@ import Control.Monad ( void )
 parseHogoFile :: String -> String -> Either String HogoProgram
 parseHogoFile fname content =
   case parse parseHogo fname content of
-    Left err -> Left $ errorBundlePretty err
+    Left err      -> Left $ errorBundlePretty err
     Right program -> Right program
 
 
@@ -48,6 +48,7 @@ unaryCommand = command "forward" GoForward
            <|> command "back"    GoBackward
            <|> command "left"    TurnLeft
            <|> command "right"   TurnRight
+           <|> command "speed"   SetSpeed
   where
     command :: String -> (Float -> HogoCode) -> Parser HogoCode
     command cmd stmtType = do
