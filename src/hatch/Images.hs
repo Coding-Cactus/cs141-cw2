@@ -40,10 +40,12 @@ rect x y = Leaf $ Gloss.rectangleSolid (fromIntegral x) (fromIntegral y)
 line :: Float -> Float -> Float -> Float -> Image
 line x1 y1 x2 y2 = Leaf $ Gloss.line [(x1, y1), (x2, y2)]
 
+polygon :: [(Float, Float)] -> Image
+polygon = Leaf . Gloss.polygon
 
-applyColour :: Float -> Float -> Float -> Image -> Image
+applyColour :: Int -> Int -> Int -> Image -> Image
 applyColour r g b = fmap (color rgbColor)
-  where rgbColor = makeColor (r / 255) (g / 255) (b / 255) 1
+  where rgbColor = makeColorI r g b 255
 
 text :: String -> Image
 text t = Leaf $ Gloss.pictures [

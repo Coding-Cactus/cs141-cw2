@@ -2,11 +2,13 @@
 penup
 
 ; draw the >
+colour 67 55 98
 ;; go to top-left
 left 30
 forward 100
 right 180
 ;; start drawing
+startfill
 pendown
 forward 100
 right 60
@@ -19,6 +21,7 @@ left 60
 forward 100
 left 60
 forward 20
+endfill
 
 ; go back home
 penup
@@ -31,11 +34,13 @@ forward 40
 left 90
 
 ; draw the lambda
+colour 94 79 135
 ;; go to top-left
 left 30
 forward 100
 right 180
 ;; start drawing
+startfill
 pendown
 forward 100
 right 60
@@ -53,6 +58,7 @@ left 120
 forward 200
 left 60
 forward 20
+endfill
 
 penup
 left 120
@@ -61,6 +67,9 @@ forward 100
 left 105
 forward 30
 
+; draw the =
+colour 144 77 140
+startfill
 pendown
 right 105
 forward 20
@@ -70,11 +79,13 @@ left 120
 forward 20
 left 60
 forward 60
+endfill
 
 penup
 left 120
 forward 30
 
+startfill
 pendown
 forward 20
 left 60
@@ -83,5 +94,7 @@ left 120
 forward 20
 left 60
 forward 60
+endfill
+
 penup
 forward 200

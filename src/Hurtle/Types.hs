@@ -21,7 +21,9 @@ data HogoCode
   -- | Pen Commands
   | PenUp
   | PenDown
-  | Colour Float Float Float
+  | StartFill
+  | EndFill
+  | Colour Int Int Int
   | ClearScreen
   -- | Control Flow
   | Repeat Int HogoProgram
@@ -32,10 +34,13 @@ data TurtleState = TurtleState {
   position :: (Float, Float),
   angle :: Float,
   penDown :: Bool,
-  linesDrawnSoFar :: [((Float, Float), (Float, Float), (Float, Float, Float))], -- ((x1, y1), (x2, y2), (r, g, b))
+  linesDrawnSoFar :: [((Float, Float), (Float, Float), (Int, Int, Int))], -- ((x1, y1), (x2, y2), (r, g, b))
+  polygonsDrawnSoFar :: [([(Float, Float)], (Int, Int, Int))],
+  currentPolygonDrawing :: [(Float, Float)],
   remainingFrames :: Float,
   speed :: Float,
-  colour :: (Float, Float, Float)
+  colour :: (Int, Int, Int),
+  filling :: Bool
 }
 
 -- | This is an alias for the Megaparsec parser type; the "Void" tells it that we don't have any custom error type, and the "string" tells it that we're parsing strings.

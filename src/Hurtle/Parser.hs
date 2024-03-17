@@ -6,7 +6,7 @@ import Hurtle.Types
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Char.Lexer
-import Control.Monad ( void )
+import Control.Monad ( void, when )
 
 
 parseHogoFile :: String -> String -> Either String HogoProgram
@@ -23,7 +23,7 @@ parseStmt :: Parser HogoCode
 parseStmt = do
   statement <- nullaryCommand
            <|> unaryCommand
-           <|> trinaryCommand
+           <|> colourCommand
            <|> repeatCommand
            <|> foreverCommand
 
@@ -42,6 +42,8 @@ nullaryCommand :: Parser HogoCode
 nullaryCommand = command "home"        GoHome
              <|> command "penup"       PenUp
              <|> command "pendown"     PenDown
+             <|> command "startfill"   StartFill
+             <|> command "endfill"     EndFill
              <|> command "clearscreen" ClearScreen
   where
     command cmd stmtType = do
@@ -64,17 +66,23 @@ unaryCommand = command "forward" GoForward
       stmtType <$> number
 
 
-trinaryCommand :: Parser HogoCode
-trinaryCommand = command "colour" Colour
-  where
-    command cmd stmtType = do
-      void $ string cmd
+colourCommand :: Parser HogoCode
+colourCommand = do
+      void $ string "colour"
+
       hspace1
-      arg1 <- number
+      red <- decimal
+      when (red < 0 || red > 255) $ fail "red value must be in 0..255"
+
       hspace1
-      arg2 <- number
+      green <- decimal
+      when (green < 0 || green > 255) $ fail "green value must be in 0..255"
+
       hspace1
-      stmtType arg1 arg2 <$> number
+      blue <- decimal
+      when (blue < 0 || blue > 255) $ fail "blue value must be in 0..255"
+
+      pure $ Colour red green blue
 
 
 repeatCommand :: Parser HogoCode
