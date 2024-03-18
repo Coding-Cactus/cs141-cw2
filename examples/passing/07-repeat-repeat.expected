@@ -1,1 +1,1 @@
-[Repeat 5 [ Repeat 3 [ GoForward 10 ], TurnRight 90 ]]
+[Repeat (Raw 5) [ Repeat (Raw 3) [ GoForward (Raw 10) ], TurnRight (Raw 90) ]]
