@@ -6,7 +6,9 @@ import Control.Monad.State
 import Hurtle.Types
 import Data.Foldable (foldl')
 
-
+import Data.Map (Map)
+import qualified Data.Map as Map
+import Data.Fixed (mod')
 
 
 renderHogoAnimation :: HogoProgram -> IO ()
@@ -16,8 +18,9 @@ renderHogoAnimation program = runAnimation finalState
 
 
 drawState :: TurtleState -> Image
-drawState turtle = foldl' (<@>) blank (map drawLine $ linesDrawnSoFar turtle)
-               <@> foldl' (<@>) blank (map drawPolygon $ polygonsDrawnSoFar turtle)
+drawState turtle = foldl' (<@>) blank (map drawPolygon $ polygonsDrawnSoFar turtle)
+               <@> drawPolygon (currentPolygonDrawing turtle, colour turtle)
+               <@> foldl' (<@>) blank (map drawLine $ linesDrawnSoFar turtle)
                <@> turtleImg
   where
     drawLine ((x1, y1), (x2, y2), (r, g, b)) = applyColour r g b $ line x1 y1 x2 y2
@@ -41,7 +44,8 @@ runProgramUptoFrame program frames = execState (evalProgram program) initialTurt
       currentPolygonDrawing = [],
       filling = False,
       remainingFrames = fromIntegral frames,
-      speed = 10
+      speed = 10,
+      symbolTable = Map.empty
     }
 
 evalProgram :: HogoProgram -> State TurtleState ()
@@ -76,11 +80,28 @@ runCommand command = do
         ClearScreen             -> clearScreenCommand
         Repeat       n commands -> repeatCommand       n commands
         Forever      commands   -> foreverCommand      commands
+        Assignment   name value -> assignmentStatement name value
 
   put $ f turtle
 
+
+-- | Expression Evaluation
+evaluate :: Expression -> Map String Float -> Float
+evaluate (Raw val)              _    = val
+evaluate (Variable name)        vars = vars Map.! name
+evaluate (Negate expr)          v    = -(evaluate expr v)
+evaluate (Id expr)              v    = evaluate expr v
+evaluate (Exponent expr1 expr2) v    = evaluate expr1 v ** evaluate expr2 v
+evaluate (Multiply expr1 expr2) v    = evaluate expr1 v * evaluate expr2 v
+evaluate (Divide expr1 expr2)   v    = evaluate expr1 v / evaluate expr2 v
+evaluate (Modulo expr1 expr2)   v    = evaluate expr1 v `mod'` evaluate expr2 v
+evaluate (Plus expr1 expr2)     v    = evaluate expr1 v + evaluate expr2 v
+evaluate (Minus expr1 expr2)    v    = evaluate expr1 v - evaluate expr2 v
+
+
+
 -- | Drawing Commands
-forwardCommand :: Float -> TurtleState -> TurtleState
+forwardCommand :: Expression -> TurtleState -> TurtleState
 forwardCommand dist turtle = turtle {
     position = newPosition,
     linesDrawnSoFar = newLines,
@@ -89,7 +110,7 @@ forwardCommand dist turtle = turtle {
   }
   where
     currentRemainingFrames = remainingFrames turtle
-    newRemainingFrames = max 0 $ currentRemainingFrames - (dist / speed turtle)
+    newRemainingFrames = max 0 $ currentRemainingFrames - (evaluate dist (symbolTable turtle) / speed turtle)
     distCompletion = (currentRemainingFrames - newRemainingFrames) * speed turtle
 
     (x, y) = position turtle
@@ -111,24 +132,24 @@ forwardCommand dist turtle = turtle {
         else currentPolygonDrawing turtle
 
 
-backwardCommand :: Float -> TurtleState -> TurtleState
-backwardCommand dist = forwardCommand (-dist)
+backwardCommand :: Expression -> TurtleState -> TurtleState
+backwardCommand dist = forwardCommand (Negate dist)
 
 
 -- | Turning Commands
-turnLeftCommand  :: Float -> TurtleState -> TurtleState
-turnRightCommand :: Float -> TurtleState -> TurtleState
+turnLeftCommand  :: Expression -> TurtleState -> TurtleState
+turnRightCommand :: Expression -> TurtleState -> TurtleState
 
-turnLeftCommand  dTheta turtle = turtle { angle = angle turtle - dTheta }
-turnRightCommand dTheta turtle = turtle { angle = angle turtle + dTheta }
-
-
-setSpeedCommand :: Float -> TurtleState -> TurtleState
-setSpeedCommand newSpeed turtle = turtle { speed = newSpeed }
+turnLeftCommand  dTheta turtle = turtle { angle = angle turtle - evaluate dTheta (symbolTable turtle) }
+turnRightCommand dTheta turtle = turtle { angle = angle turtle + evaluate dTheta (symbolTable turtle) }
 
 
-waitCommand :: Float -> TurtleState -> TurtleState
-waitCommand duration turtle = turtle { remainingFrames = max 0 (remainingFrames turtle - (duration * 30)) }
+setSpeedCommand :: Expression -> TurtleState -> TurtleState
+setSpeedCommand newSpeed turtle = turtle { speed = evaluate newSpeed (symbolTable turtle) }
+
+
+waitCommand :: Expression -> TurtleState -> TurtleState
+waitCommand duration turtle = turtle { remainingFrames = max 0 (remainingFrames turtle - (evaluate duration (symbolTable turtle) * 30)) }
 
 
 goHomeCommand :: TurtleState -> TurtleState
@@ -140,12 +161,12 @@ penUpCommand       :: TurtleState -> TurtleState
 penDownCommand     :: TurtleState -> TurtleState
 startFillCommand   :: TurtleState -> TurtleState
 endFillCommand     :: TurtleState -> TurtleState
-colourCommand      :: Int -> Int -> Int -> TurtleState -> TurtleState
+colourCommand      :: Expression -> Expression -> Expression -> TurtleState -> TurtleState
 clearScreenCommand :: TurtleState -> TurtleState
 
 penUpCommand turtle        = turtle { penDown = False }
 penDownCommand turtle      = turtle { penDown = True }
-colourCommand r g b turtle = turtle { colour = (r, g, b) }
+colourCommand r g b turtle = turtle { colour = (floor $ evaluate r (symbolTable turtle),  floor $ evaluate g (symbolTable turtle), floor $ evaluate b (symbolTable turtle)) }
 clearScreenCommand turtle  = turtle { linesDrawnSoFar = [], position = (0, 0) }
 startFillCommand turtle    = turtle { filling = True, currentPolygonDrawing = [position turtle] }
 endFillCommand turtle      = turtle {
@@ -156,12 +177,20 @@ endFillCommand turtle      = turtle {
 
 
 -- | Control Flow commands
-repeatCommand :: Int -> HogoProgram -> TurtleState -> TurtleState
-repeatCommand n commands turtle
+repeatCommand :: Expression -> HogoProgram -> TurtleState -> TurtleState
+repeatCommand nExpr commands turtle
   | n == 0 || remainingFrames turtle <= 0 = turtle
-  | otherwise = repeatCommand (n-1) commands $ execState (evalProgram commands) turtle
+  | otherwise = repeatCommand nMinusOne commands $ execState (evalProgram commands) turtle
+  where
+    n = evaluate nExpr (symbolTable turtle)
+    nMinusOne = Raw (n - 1)
 
 foreverCommand :: HogoProgram -> TurtleState -> TurtleState
 foreverCommand commands turtle
   | remainingFrames turtle <= 0 = turtle
   | otherwise = foreverCommand commands $ execState (evalProgram commands) turtle
+
+
+-- | Assignment Statement
+assignmentStatement :: String -> Expression -> TurtleState -> TurtleState
+assignmentStatement name value turtle = turtle { symbolTable = Map.insert name (evaluate value (symbolTable turtle)) $ symbolTable turtle  }

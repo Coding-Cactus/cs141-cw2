@@ -1,7 +1,8 @@
 module Hurtle.Types where
 
-import Text.Megaparsec
-import Data.Void
+import Text.Megaparsec (Parsec)
+import Data.Void (Void)
+import Data.Map (Map)
 
 --------------------------------------------------------------------------------
 -- Type Definitions
@@ -11,24 +12,39 @@ type HogoProgram = [HogoCode]
 
 data HogoCode
   -- | Movement Commands
-  = GoForward Float
-  | GoBackward Float
-  | TurnLeft Float
-  | TurnRight Float
-  | SetSpeed Float
-  | Wait Float
+  = GoForward Expression
+  | GoBackward Expression
+  | TurnLeft Expression
+  | TurnRight Expression
+  | SetSpeed Expression
+  | Wait Expression
   | GoHome
   -- | Pen Commands
   | PenUp
   | PenDown
   | StartFill
   | EndFill
-  | Colour Int Int Int
+  | Colour Expression Expression Expression
   | ClearScreen
   -- | Control Flow
-  | Repeat Int HogoProgram
+  | Repeat Expression HogoProgram
   | Forever HogoProgram
-  deriving (Show,Read,Eq)
+  -- | Assignment
+  | Assignment String Expression
+  deriving (Show, Read, Eq)
+
+data Expression
+  = Raw Float
+  | Variable String
+  | Negate Expression
+  | Id Expression
+  | Exponent Expression Expression
+  | Multiply Expression Expression
+  | Divide Expression Expression
+  | Modulo Expression Expression
+  | Plus Expression Expression
+  | Minus Expression Expression
+  deriving (Show, Read, Eq)
 
 data TurtleState = TurtleState {
   position :: (Float, Float),
@@ -40,7 +56,8 @@ data TurtleState = TurtleState {
   remainingFrames :: Float,
   speed :: Float,
   colour :: (Int, Int, Int),
-  filling :: Bool
+  filling :: Bool,
+  symbolTable :: Map String Float
 }
 
 -- | This is an alias for the Megaparsec parser type; the "Void" tells it that we don't have any custom error type, and the "string" tells it that we're parsing strings.
