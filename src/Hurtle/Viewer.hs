@@ -19,7 +19,6 @@ renderHogoAnimation program = runAnimation finalState
 
 drawState :: TurtleState -> Image
 drawState turtle = foldl' (<@>) blank (map drawPolygon $ polygonsDrawnSoFar turtle)
-               <@> drawPolygon (currentPolygonDrawing turtle, colour turtle)
                <@> foldl' (<@>) blank (map drawLine $ linesDrawnSoFar turtle)
                <@> turtleImg
   where
