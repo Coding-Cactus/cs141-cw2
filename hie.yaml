@@ -9,3 +9,6 @@ cradle:
 
             - path: "./test"
               component: "cswk-hurtle:test:cswk-hurtle-test"
+
+            - path: "./app"
+              component: "cswk-hurtle"
