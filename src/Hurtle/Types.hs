@@ -31,6 +31,8 @@ data HogoCode
   | Forever HogoProgram
   -- | Assignment
   | Assignment String Expression
+  | Subroutine String HogoProgram
+  | SubroutineCall String
   deriving (Show, Read, Eq)
 
 data Expression
@@ -57,7 +59,8 @@ data TurtleState = TurtleState {
   speed :: Float,
   colour :: (Int, Int, Int),
   filling :: Bool,
-  symbolTable :: Map String Float
+  symbolTable :: Map String Float,
+  subroutineTable :: Map String HogoProgram
 }
 
 -- | This is an alias for the Megaparsec parser type; the "Void" tells it that we don't have any custom error type, and the "string" tells it that we're parsing strings.

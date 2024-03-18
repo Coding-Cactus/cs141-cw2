@@ -44,7 +44,8 @@ runProgramUptoFrame program frames = execState (evalProgram program) initialTurt
       filling = False,
       remainingFrames = fromIntegral frames,
       speed = 10,
-      symbolTable = Map.empty
+      symbolTable = Map.empty,
+      subroutineTable = Map.empty
     }
 
 evalProgram :: HogoProgram -> State TurtleState ()
@@ -64,22 +65,24 @@ runCommand command = do
   let
     f =
       case command of
-        GoForward   dist        -> forwardCommand      dist
-        GoBackward  dist        -> backwardCommand     dist
-        TurnRight   dtheta      -> turnRightCommand    dtheta
-        TurnLeft    dtheta      -> turnLeftCommand     dtheta
-        SetSpeed    speed       -> setSpeedCommand     speed
-        Wait        duration    -> waitCommand         duration
-        GoHome                  -> goHomeCommand
-        PenUp                   -> penUpCommand
-        PenDown                 -> penDownCommand
-        StartFill               -> startFillCommand
-        EndFill                 -> endFillCommand
-        Colour       r g b      -> colourCommand       r g b
-        ClearScreen             -> clearScreenCommand
-        Repeat       n commands -> repeatCommand       n commands
-        Forever      commands   -> foreverCommand      commands
-        Assignment   name value -> assignmentStatement name value
+        GoForward      dist          -> forwardCommand       dist
+        GoBackward     dist          -> backwardCommand      dist
+        TurnRight      dtheta        -> turnRightCommand     dtheta
+        TurnLeft       dtheta        -> turnLeftCommand      dtheta
+        SetSpeed       speed         -> setSpeedCommand      speed
+        Wait           duration      -> waitCommand          duration
+        GoHome                       -> goHomeCommand
+        PenUp                        -> penUpCommand
+        PenDown                      -> penDownCommand
+        StartFill                    -> startFillCommand
+        EndFill                      -> endFillCommand
+        Colour         r g b         -> colourCommand        r g b
+        ClearScreen                  -> clearScreenCommand
+        Repeat         n commands    -> repeatCommand        n commands
+        Forever        commands      -> foreverCommand       commands
+        Assignment     name value    -> assignmentStatement  name value
+        Subroutine     name commands -> subroutineDefinition name commands
+        SubroutineCall name          -> subroutineCall       name
 
   put $ f turtle
 
@@ -193,3 +196,9 @@ foreverCommand commands turtle
 -- | Assignment Statement
 assignmentStatement :: String -> Expression -> TurtleState -> TurtleState
 assignmentStatement name value turtle = turtle { symbolTable = Map.insert name (evaluate value (symbolTable turtle)) $ symbolTable turtle  }
+
+subroutineDefinition :: String -> HogoProgram -> TurtleState -> TurtleState
+subroutineDefinition name commands turtle = turtle { subroutineTable = Map.insert name commands $ subroutineTable turtle }
+
+subroutineCall :: String -> TurtleState -> TurtleState
+subroutineCall name turtle = execState (evalProgram $ subroutineTable turtle Map.! name) turtle

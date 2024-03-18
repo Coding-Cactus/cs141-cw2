@@ -41,6 +41,8 @@ parseStmt = do
            <|> repeatCommand
            <|> foreverCommand
            <|> variableAssignment
+           <|> subroutineDefinition
+           <|> subroutineCall
 
   skipWhitespace
   pure statement
@@ -103,15 +105,7 @@ foreverCommand = do
   hspace1
   Forever <$> parseBlock
 
-
-parseBlock :: Parser HogoProgram
-parseBlock = do
-  --between (sym "[") (sym "]") parseHogo
-  void $ char '['
-  skipWhitespace
-  manyTill parseStmt (char ']')
-
-
+-- | User Defined Constructs
 
 variableAssignment :: Parser HogoCode
 variableAssignment = do
@@ -122,6 +116,18 @@ variableAssignment = do
   hspace1
 
   Assignment name <$> expression
+
+subroutineDefinition :: Parser HogoCode
+subroutineDefinition = do
+  void $ string "to"
+  hspace1
+  name <- some alphaNumChar
+
+  skipWhitespace
+  Subroutine name <$> manyTill parseStmt (string "end")
+
+subroutineCall :: Parser HogoCode
+subroutineCall = SubroutineCall <$> some alphaNumChar
 
 
 
@@ -183,3 +189,9 @@ identifier = do
   name <- some alphaNumChar
 
   pure $ c : name
+
+parseBlock :: Parser HogoProgram
+parseBlock = do
+  void $ char '['
+  skipWhitespace
+  manyTill parseStmt (char ']')

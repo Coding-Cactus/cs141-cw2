@@ -1,0 +1,11 @@
+speed 100
+
+:size = 0
+to spiral
+  forward :size
+  right 91
+  :size = :size + 2
+  spiral
+end
+
+spiral
