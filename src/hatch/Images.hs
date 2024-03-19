@@ -14,8 +14,7 @@ import Layout
 import Transforms
 
 import Data.Maybe (fromMaybe)
-import Graphics.Gloss (Picture, color)
-import Graphics.Gloss.Data.Color
+import Graphics.Gloss (Picture)
 
 --------------------------------------------------------------------------------
 
@@ -42,10 +41,6 @@ line x1 y1 x2 y2 = Leaf $ Gloss.line [(x1, y1), (x2, y2)]
 
 polygon :: [(Float, Float)] -> Image
 polygon = Leaf . Gloss.polygon
-
-applyColour :: Int -> Int -> Int -> Image -> Image
-applyColour r g b = fmap (color rgbColor)
-  where rgbColor = makeColorI r g b 255
 
 text :: String -> Image
 text t = Leaf $ Gloss.pictures [
