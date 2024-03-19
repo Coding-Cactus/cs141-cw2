@@ -1,10 +1,10 @@
-to forwards
+sub #spiral [
   forward :size ;undefined variables default to 0
   right 91
   :size = :size + 2
-  forwards
-end
+  #spiral
+]
 
-abc ;undefined subroutines are ignored
+#abc ;undefined subroutines are ignored
 speed 100
-forwards
+#spiral
