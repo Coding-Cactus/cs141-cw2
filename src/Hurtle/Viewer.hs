@@ -8,6 +8,7 @@ import Data.Foldable (foldl')
 
 import Data.Map (Map)
 import qualified Data.Map as Map
+
 import Data.Fixed (mod')
 
 
@@ -90,7 +91,7 @@ runCommand command = do
 -- | Expression Evaluation
 evaluate :: Expression -> Map String Float -> Float
 evaluate (Raw val)              _    = val
-evaluate (Variable name)        vars = vars Map.! name
+evaluate (Variable name)        vars = if Map.member name vars then vars Map.! name else 0
 evaluate (Negate expr)          v    = -(evaluate expr v)
 evaluate (Id expr)              v    = evaluate expr v
 evaluate (Exponent expr1 expr2) v    = evaluate expr1 v ** evaluate expr2 v
@@ -201,4 +202,9 @@ subroutineDefinition :: String -> HogoProgram -> TurtleState -> TurtleState
 subroutineDefinition name commands turtle = turtle { subroutineTable = Map.insert name commands $ subroutineTable turtle }
 
 subroutineCall :: String -> TurtleState -> TurtleState
-subroutineCall name turtle = execState (evalProgram $ subroutineTable turtle Map.! name) turtle
+subroutineCall name turtle = execState (evalProgram subroutine) turtle
+  where
+    subs = subroutineTable turtle
+    subroutine
+      | Map.member name subs = subroutineTable turtle Map.! name
+      | otherwise = []

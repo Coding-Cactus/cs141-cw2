@@ -1,11 +1,10 @@
-speed 100
-
-:size = 0
-to spiral
-  forward :size
+to forwards
+  forward :size ;undefined variables default to 0
   right 91
   :size = :size + 2
-  spiral
+  forwards
 end
 
-spiral
+abc ;undefined subroutines are ignored
+speed 100
+forwards
