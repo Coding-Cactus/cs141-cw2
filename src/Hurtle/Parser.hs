@@ -4,15 +4,6 @@ import Hurtle.Types
 
 -- You'll probably want to refer to https://hackage.haskell.org/package/megaparsec for documentation of the Megaparsec library.
 import Text.Megaparsec
-    ( (<|>),
-      (<?>),
-      parse,
-      errorBundlePretty,
-      between,
-      manyTill,
-      choice,
-      some,
-      MonadParsec(try, eof) )
 import Text.Megaparsec.Char
     ( alphaNumChar, char, hspace1, string, space1, hspace )
 import Text.Megaparsec.Char.Lexer
@@ -20,7 +11,6 @@ import Text.Megaparsec.Char.Lexer
 import Control.Monad ( void )
 import Control.Monad.Combinators.Expr
     ( makeExprParser, Operator(InfixL, Prefix, InfixR) )
-import Control.Applicative (empty)
 
 
 parseHogoFile :: String -> String -> Either String HogoProgram
@@ -71,16 +61,16 @@ unaryCommand = command "forward" GoForward
            <|> command "wait"    Wait
   where
     command cmd stmtType = do
-      void $ string cmd
-      hspace1
+      void $ string $ cmd ++ " "
+      hspace
       stmtType <$> expression
 
 
 colourCommand :: Parser HogoCode
 colourCommand = do
-      void $ string "colour"
+      void $ string "colour "
 
-      hspace1
+      hspace
       red <- expression
 
       hspace1
@@ -92,8 +82,8 @@ colourCommand = do
 
 repeatCommand :: Parser HogoCode
 repeatCommand = do
-  void $ string "repeat"
-  hspace1
+  void $ string "repeat "
+  hspace
   num <- expression
   hspace1
   Repeat num <$> parseBlock
@@ -101,8 +91,8 @@ repeatCommand = do
 
 foreverCommand :: Parser HogoCode
 foreverCommand = do
-  void $ string "forever"
-  hspace1
+  void $ string "forever "
+  hspace
   Forever <$> parseBlock
 
 -- | User Defined Constructs
@@ -119,8 +109,8 @@ variableAssignment = do
 
 subroutineDefinition :: Parser HogoCode
 subroutineDefinition = do
-  void $ string "to"
-  hspace1
+  void $ string "to "
+  hspace
   name <- some alphaNumChar
 
   skipWhitespace
