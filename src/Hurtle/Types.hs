@@ -49,15 +49,15 @@ data Expression
   deriving (Show, Read, Eq)
 
 data TurtleState = TurtleState {
-  position :: (Float, Float),
+  position :: (Float, Float), -- (x, y)
   angle :: Float,
   penDown :: Bool,
-  linesDrawnSoFar :: [((Float, Float), (Float, Float), (Int, Int, Int))], -- ((x1, y1), (x2, y2), (r, g, b))
-  polygonsDrawnSoFar :: [([(Float, Float)], (Int, Int, Int))],
+  linesDrawnSoFar :: [((Float, Float), (Float, Float), (Int, Int, Int))], -- [((x1, y1), (x2, y2), (r, g, b))]
+  polygonsDrawnSoFar :: [([(Float, Float)], (Int, Int, Int))], -- [([(x, y)], (r, g, b))]
   currentPolygonDrawing :: [(Float, Float)],
   remainingFrames :: Float,
   speed :: Float,
-  colour :: (Int, Int, Int),
+  colour :: (Int, Int, Int), -- (r, g, b)
   filling :: Bool,
   symbolTable :: Map String Float,
   subroutineTable :: Map String HogoProgram
