@@ -1,0 +1,96 @@
+sub #H [
+  repeat 2 [
+    forward 100
+    right 90
+    forward 20
+    right 90
+    forward 90
+    left 90
+    forward 80
+    left 90
+    forward 90
+    right 90
+    forward 20
+    right 90
+    forward 100
+  ]
+]
+
+sub #I [
+  repeat 2 [
+    forward 80
+    left 90
+    forward 50
+    right 90
+    forward 20
+    right 90
+    forward 120
+    right 90
+    forward 20
+    right 90
+    forward 50
+    left 90
+    forward 80
+  ]
+]
+
+sub #bang [
+  ;top rectangle
+  startfill
+  forward 100
+  right 90
+  forward 20
+  right 90
+  forward 150
+  right 90
+  forward 20
+  right 90
+  forward 50
+  endfill
+
+  ;move to bottom rectangle
+  penup
+  right 180
+  forward 75
+  pendown
+
+  ;bottom square
+  startfill
+  repeat 4 [
+    forward 20
+    left 90
+  ]
+  endfill
+]
+
+;------------------------------------------------------------------------
+
+speed 20
+colour 43 178 75
+
+#H
+
+penup
+right 90
+forward 220
+left 90
+pendown
+
+#I
+
+penup
+right 90
+forward 100
+left 90
+pendown
+
+forever [
+  #bang
+
+  penup
+  left 90
+  forward 50
+  left 90
+  forward 75
+  pendown
+]
