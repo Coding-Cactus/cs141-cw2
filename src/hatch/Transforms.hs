@@ -10,7 +10,6 @@ module Transforms where
 import Layout
 import qualified Graphics.Gloss as Gloss
 
-import Graphics.Gloss (color)
 import Graphics.Gloss.Data.Color
 
 --------------------------------------------------------------------------------
@@ -30,7 +29,7 @@ mirror :: Image -> Image
 mirror = fmap $ Gloss.scale (-1) 1
 
 applyColour :: Int -> Int -> Int -> Image -> Image
-applyColour r g b = fmap (color rgbColor)
-  where rgbColor = makeColorI r g b 255
+applyColour r g b = fmap (Gloss.color rgbColour)
+  where rgbColour = makeColorI r g b 255
 
 --------------------------------------------------------------------------------
