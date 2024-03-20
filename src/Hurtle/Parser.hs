@@ -58,7 +58,7 @@ parseStmt = do
 -- | Basic commands
 
 {-
-  This function parses the commands which take no arguments. This is simply involves checking the string matches the
+  This function parses the commands which take no arguments. This simply involves checking the string matches the
   command and then returning the correct HogoCode constructor
 -}
 nullaryCommand :: Parser HogoCode
@@ -157,7 +157,7 @@ variableAssignment = do
 
 {-
   Subroutines are defined by writing "sub name [ <commands> ]". This is parsed by firstly matching the "sub", then the
-  name. Then, the commands are parsed using the `parseBlock` until parser.
+  name. Then, the commands are parsed using the `parseBlock` util parser.
 -}
 subroutineDefinition :: Parser HogoCode
 subroutineDefinition = do
@@ -179,9 +179,7 @@ subroutineCall = SubroutineCall <$> subroutine
 -- | Expressions
 -- | The basis of this expression parsing is the example code from https://hackage.haskell.org/package/megaparsec-5.2.0/docs/Text-Megaparsec-Expr.html
 
-{-
-  Creates an expression parser based off the operators table and definition of a term.
--}
+-- Creates an expression parser based off the operators table and definition of a term.
 expression :: Parser Expression
 expression = makeExprParser term table <?> "expression"
 
@@ -195,7 +193,7 @@ term :: Parser Expression
 term = parens expression <|> Raw <$> number <|> Variable <$> variable <?> "term"
 
 {-
-  This is the table of operators. It defines the precedence (highest first, least last) of each operator, and how they
+  This is the table of operators. It defines the precedence (highest first, lowest last) of each operator, and how they
   apply to their arguments.
 -}
 table :: [[Operator Parser Expression]]

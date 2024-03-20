@@ -185,7 +185,7 @@ setSpeedCommand newSpeed turtle = turtle { speed = evaluate newSpeed (symbolTabl
 waitCommand :: Expression -> TurtleState -> TurtleState
 waitCommand duration turtle = turtle { remainingFrames = max 0 (remainingFrames turtle - (evaluate duration (symbolTable turtle) * 30)) }
 
--- Set the home and angle to their default values
+-- Set the position and angle to their default values
 goHomeCommand :: TurtleState -> TurtleState
 goHomeCommand turtle = turtle { position = (0, 0), angle = 0 }
 
@@ -193,7 +193,7 @@ goHomeCommand turtle = turtle { position = (0, 0), angle = 0 }
 -- | Pen Commands
 penUpCommand       :: TurtleState -> TurtleState
 penDownCommand     :: TurtleState -> TurtleState
-colourCommand      :: Expression -> Expression -> Expression -> TurtleState -> TurtleState
+colourCommand      :: Expression  -> Expression -> Expression -> TurtleState -> TurtleState
 clearScreenCommand :: TurtleState -> TurtleState
 startFillCommand   :: TurtleState -> TurtleState
 endFillCommand     :: TurtleState -> TurtleState
